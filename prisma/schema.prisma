@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AssetType {
+  STOCK
+  MUTUAL_FUND
+  ETF
+  BOND
+  REIT
+  INVIT
+  GOLD
+  CASH
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id          String   @id @default(cuid())
+  clerkId     String   @unique
+  email       String   @unique
+  firstName   String?
+  lastName    String?
+  imageUrl    String?
+
+  portfolios  Portfolio[]
+  progress    LearningProgress[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+
+  holdings    Holding[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Holding {
+  id              String   @id @default(cuid())
+
+  portfolioId     String
+  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  assetName       String
+  assetType       AssetType
+
+  quantity        Float
+
+  averagePrice    Float
+
+  currentPrice    Float
+
+  investedValue   Float
+
+  currentValue    Float
+
+  createdAt       DateTime @default(now())
+}
+
+model MarketplaceAsset {
+  id              String   @id @default(cuid())
+
+  name            String
+
+  type            AssetType
+
+  issuer          String
+
+  expectedReturn  Float
+
+  risk            RiskLevel
+
+  minimumAmount   Float
+
+  description     String
+
+  locked          Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+}
+
+model LearningProgress {
+  id              String @id @default(cuid())
+
+  userId          String
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  module          String
+
+  completed       Boolean @default(false)
+
+  score           Int @default(0)
+
+  updatedAt       DateTime @updatedAt
+}
