@@ -46,4 +46,9 @@ export const navigation: NavigationItem[] = [
         href: "/settings",
         icon: Settings,
     },
+    {
+        title: "Connect Account",
+        href: "/account-aggregator",
+        icon: Landmark,
+    },
 ];
