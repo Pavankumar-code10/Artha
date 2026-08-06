@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 
-import { normalizeHoldings } from "../engine/normalize";
 import { calculateConcentration } from "../engine/concentration";
 import { calculateDiversification } from "../engine/diversification";
+import { normalizeHoldings } from "../engine/normalize";
+import { calculateRisk } from "../engine/risk";
 
 export async function generatePortfolioXRay(
     portfolioId: string
@@ -28,24 +29,34 @@ export async function generatePortfolioXRay(
     const normalized =
         normalizeHoldings(portfolio.holdings);
 
-    const totalValue =
-        normalized.reduce(
-            (sum, holding) =>
-                sum + holding.currentValue,
-            0
-        );
+    const diversification =
+        calculateDiversification(normalized);
+
+    const concentration =
+        calculateConcentration(normalized);
 
     return {
 
-        totalValue,
+        totalValue:
+            normalized.reduce(
+                (sum, h) =>
+                    sum + h.currentValue,
+                0
+            ),
 
         diversificationScore:
-            calculateDiversification(normalized),
+            diversification,
 
         concentrationScore:
-            calculateConcentration(normalized),
+            concentration,
 
         overlapScore: 0,
+
+        risk:
+            calculateRisk(
+                diversification,
+                concentration
+            ),
 
         topHoldings:
 

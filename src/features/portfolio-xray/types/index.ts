@@ -1,3 +1,5 @@
+import { RiskLevel } from "@prisma/client";
+
 export interface NormalizedHolding {
     symbol: string;
     name: string;
@@ -13,6 +15,7 @@ export interface NormalizedHolding {
 }
 
 export interface PortfolioXRayResult {
+
     totalValue: number;
 
     diversificationScore: number;
@@ -20,6 +23,8 @@ export interface PortfolioXRayResult {
     concentrationScore: number;
 
     overlapScore: number;
+
+    risk: RiskLevel;
 
     topHoldings: NormalizedHolding[];
 }
