@@ -67,7 +67,10 @@ model Holding {
   portfolioId     String
   portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
 
+  symbol          String
+
   assetName       String
+
   assetType       AssetType
 
   quantity        Float
