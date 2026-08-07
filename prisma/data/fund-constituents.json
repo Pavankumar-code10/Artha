@@ -1,0 +1,42 @@
+[
+    {
+        "fundName": "Parag Parikh Flexi Cap Fund",
+        "symbol": "RELIANCE",
+        "weight": 8.20
+    },
+    {
+        "fundName": "Parag Parikh Flexi Cap Fund",
+        "symbol": "HDFCBANK",
+        "weight": 7.10
+    },
+    {
+        "fundName": "Parag Parikh Flexi Cap Fund",
+        "symbol": "TCS",
+        "weight": 6.90
+    },
+    {
+        "fundName": "Parag Parikh Flexi Cap Fund",
+        "symbol": "ITC",
+        "weight": 4.80
+    },
+    {
+        "fundName": "Nippon India ETF Nifty BeES",
+        "symbol": "RELIANCE",
+        "weight": 9.30
+    },
+    {
+        "fundName": "Nippon India ETF Nifty BeES",
+        "symbol": "HDFCBANK",
+        "weight": 8.40
+    },
+    {
+        "fundName": "Nippon India ETF Nifty BeES",
+        "symbol": "ICICIBANK",
+        "weight": 7.20
+    },
+    {
+        "fundName": "Nippon India ETF Nifty BeES",
+        "symbol": "INFY",
+        "weight": 6.10
+    }
+]

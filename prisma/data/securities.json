@@ -1,0 +1,38 @@
+[
+    {
+        "symbol": "RELIANCE",
+        "name": "Reliance Industries Ltd",
+        "sector": "Energy",
+        "industry": "Oil & Gas"
+    },
+    {
+        "symbol": "TCS",
+        "name": "Tata Consultancy Services",
+        "sector": "Information Technology",
+        "industry": "IT Services"
+    },
+    {
+        "symbol": "INFY",
+        "name": "Infosys Ltd",
+        "sector": "Information Technology",
+        "industry": "IT Services"
+    },
+    {
+        "symbol": "HDFCBANK",
+        "name": "HDFC Bank Ltd",
+        "sector": "Financial Services",
+        "industry": "Private Bank"
+    },
+    {
+        "symbol": "ICICIBANK",
+        "name": "ICICI Bank Ltd",
+        "sector": "Financial Services",
+        "industry": "Private Bank"
+    },
+    {
+        "symbol": "ITC",
+        "name": "ITC Ltd",
+        "sector": "FMCG",
+        "industry": "Consumer Goods"
+    }
+]

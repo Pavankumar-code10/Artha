@@ -25,101 +25,155 @@ enum RiskLevel {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  clerkId     String   @unique
-  email       String   @unique
-  firstName   String?
-  lastName    String?
-  imageUrl    String?
+  id        String  @id @default(cuid())
+  clerkId   String  @unique
+  email     String  @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
 
-  portfolios  Portfolio[]
-  progress    LearningProgress[]
+  portfolios Portfolio[]
+  progress   LearningProgress[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Portfolio {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId          String
-  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name            String
+  name String
 
-  institution     String
+  institution String
 
-  accountMasked   String
+  accountMasked String
 
-  consentGiven    Boolean @default(false)
+  consentGiven Boolean @default(false)
 
-  lastSyncedAt    DateTime?
+  lastSyncedAt DateTime?
 
-  holdings        Holding[]
+  holdings Holding[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Fund {
+  id String @id @default(cuid())
+
+  symbol String @unique
+
+  name String
+
+  type AssetType
+
+  issuer String
+
+  holdings Holding[]
+
+  constituents FundConstituent[]
+
+  createdAt DateTime @default(now())
 }
 
 model Holding {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  portfolioId     String
-  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId String
 
-  symbol          String
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
 
-  assetName       String
+  fundId String?
 
-  assetType       AssetType
+  fund Fund? @relation(fields: [fundId], references: [id])
 
-  quantity        Float
+  symbol String?
 
-  averagePrice    Float
+  assetName String
 
-  currentPrice    Float
+  assetType AssetType
 
-  investedValue   Float
+  quantity Float
 
-  currentValue    Float
+  averagePrice Float
 
-  createdAt       DateTime @default(now())
+  currentPrice Float
+
+  investedValue Float
+
+  currentValue Float
+
+  createdAt DateTime @default(now())
+}
+
+model Security {
+  id String @id @default(cuid())
+
+  symbol   String  @unique
+  name     String
+  sector   String
+  industry String?
+
+  constituents FundConstituent[]
+
+  createdAt DateTime @default(now())
+}
+
+model FundConstituent {
+  id String @id @default(cuid())
+
+  fundId String
+
+  fund Fund @relation(fields: [fundId], references: [id], onDelete: Cascade)
+
+  securityId String
+
+  security Security @relation(fields: [securityId], references: [id], onDelete: Cascade)
+
+  weight Float
+
+  createdAt DateTime @default(now())
+
+  @@unique([fundId, securityId])
 }
 
 model MarketplaceAsset {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  name            String
+  name String
 
-  type            AssetType
+  type AssetType
 
-  issuer          String
+  issuer String
 
-  expectedReturn  Float
+  expectedReturn Float
 
-  risk            RiskLevel
+  risk RiskLevel
 
-  minimumAmount   Float
+  minimumAmount Float
 
-  description     String
+  description String
 
-  locked          Boolean @default(true)
+  locked Boolean @default(true)
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model LearningProgress {
-  id              String @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId          String
+  userId String
 
-  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  module          String
+  module String
 
-  completed       Boolean @default(false)
+  completed Boolean @default(false)
 
-  score           Int @default(0)
+  score Int @default(0)
 
-  updatedAt       DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
