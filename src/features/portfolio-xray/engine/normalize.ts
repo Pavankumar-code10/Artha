@@ -1,34 +1,49 @@
-import { Holding } from "@prisma/client";
-
-import { NormalizedHolding } from "../types";
+import { RawHolding, NormalizedPosition } from '../types/exposure';
+import { MarketSecurity, MarketFund } from '../../market-data/types';
 
 export function normalizeHoldings(
-    holdings: Holding[]
-): NormalizedHolding[] {
+    holdings: RawHolding[],
+    securitiesData: Map<string, MarketSecurity>,
+    fundsData: Map<string, MarketFund>
+): { normalizedPositions: NormalizedPosition[]; totalPortfolioValue: number } {
+    const normalizedPositions: NormalizedPosition[] = [];
+    let totalPortfolioValue = 0;
 
-    const totalValue = holdings.reduce(
-        (sum, holding) => sum + holding.currentValue,
-        0
-    );
+    for (const holding of holdings) {
+        if (holding.type === 'DIRECT') {
+            const security = securitiesData.get(holding.assetId);
+            if (!security) continue;
 
-    return holdings.map((holding) => ({
+            const value = holding.units * security.currentPrice;
+            totalPortfolioValue += value;
 
-        symbol: holding.symbol,
+            normalizedPositions.push({
+                securityId: security.id,
+                sourceType: 'DIRECT',
+                sourceId: security.id,
+                sourceName: 'Direct Holding',
+                value,
+            });
+        } else if (holding.type === 'FUND') {
+            const fund = fundsData.get(holding.assetId);
+            if (!fund) continue;
 
-        name: holding.assetName,
+            const fundValue = holding.units * fund.nav;
+            totalPortfolioValue += fundValue;
 
-        type: holding.assetType,
+            for (const constituent of fund.constituents) {
+                const exposureValue = fundValue * (constituent.weightPercentage / 100);
 
-        quantity: holding.quantity,
+                normalizedPositions.push({
+                    securityId: constituent.securityId,
+                    sourceType: 'FUND',
+                    sourceId: fund.id,
+                    sourceName: fund.name,
+                    value: exposureValue,
+                });
+            }
+        }
+    }
 
-        investedValue: holding.investedValue,
-
-        currentValue: holding.currentValue,
-
-        allocation:
-            totalValue === 0
-                ? 0
-                : (holding.currentValue / totalValue) * 100,
-
-    }));
+    return { normalizedPositions, totalPortfolioValue };
 }

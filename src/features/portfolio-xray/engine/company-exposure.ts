@@ -1,125 +1,54 @@
-import { Holding } from "@prisma/client";
+import { NormalizedPosition, SecurityExposure, HiddenOverlap } from '../types/exposure';
+import { MarketSecurity } from '../../market-data/types';
 
-import { marketDataService } from "@/features/market-data/services/market-data.service";
+export function calculateCompanyExposures(
+    positions: NormalizedPosition[],
+    totalPortfolioValue: number,
+    securitiesData: Map<string, MarketSecurity>
+): { exposures: SecurityExposure[]; overlaps: HiddenOverlap[] } {
+    const exposureMap = new Map<string, SecurityExposure>();
 
-import { ExposureMap } from "../types/exposure";
+    for (const pos of positions) {
+        const security = securitiesData.get(pos.securityId);
+        if (!security) continue;
 
-export async function calculateCompanyExposure(
-    holdings: Holding[]
-) {
+        const existing = exposureMap.get(pos.securityId);
+        const sourceData = {
+            type: pos.sourceType,
+            name: pos.sourceName,
+            value: pos.value,
+            percentageContribution: (pos.value / totalPortfolioValue) * 100,
+        };
 
-    const exposure: ExposureMap = {};
-
-    for (const holding of holdings) {
-
-        if (
-            holding.assetType === "STOCK"
-            && holding.symbol
-        ) {
-
-            if (!exposure[holding.symbol]) {
-
-                exposure[holding.symbol] = {
-
-                    symbol: holding.symbol,
-
-                    name: holding.assetName,
-
-                    sector: "Unknown",
-
-                    value: 0,
-
-                    allocation: 0,
-
-                    source: "Direct",
-
-                };
-
-            }
-
-            exposure[holding.symbol].value +=
-                holding.currentValue;
-
-            continue;
-
+        if (existing) {
+            existing.totalValue += pos.value;
+            existing.percentageOfPortfolio = (existing.totalValue / totalPortfolioValue) * 100;
+            existing.sources.push(sourceData);
+        } else {
+            exposureMap.set(pos.securityId, {
+                securityId: security.id,
+                ticker: security.ticker,
+                name: security.name,
+                sector: security.sector,
+                totalValue: pos.value,
+                percentageOfPortfolio: (pos.value / totalPortfolioValue) * 100,
+                sources: [sourceData],
+            });
         }
-
-        if (
-            holding.assetType === "ETF"
-            || holding.assetType === "MUTUAL_FUND"
-        ) {
-
-            if (!holding.fundId)
-                continue;
-
-            const constituents =
-                await marketDataService
-                    .getFundConstituents(
-                        holding.fund.symbol
-                    );
-
-            for (const company of constituents) {
-
-                const contribution =
-
-                    holding.currentValue
-                    * company.weight
-                    / 100;
-
-                if (!exposure[company.symbol]) {
-
-                    exposure[company.symbol] = {
-
-                        symbol: company.symbol,
-
-                        name: company.name,
-
-                        sector: company.sector,
-
-                        value: 0,
-
-                        allocation: 0,
-
-                        source: holding.assetName,
-
-                    };
-
-                }
-
-                exposure[company.symbol].value +=
-                    contribution;
-
-            }
-
-        }
-
     }
 
-    const totalValue =
-        Object.values(exposure)
-            .reduce(
-                (sum, item) =>
-                    sum + item.value,
-                0
-            );
+    const exposures = Array.from(exposureMap.values()).sort((a, b) => b.totalValue - a.totalValue);
 
-    Object.values(exposure)
-        .forEach((company) => {
+    const overlaps: HiddenOverlap[] = exposures
+        .filter(exp => exp.sources.length > 1)
+        .map(exp => ({
+            securityName: exp.name,
+            ticker: exp.ticker,
+            totalPercentage: exp.percentageOfPortfolio,
+            fundCount: exp.sources.filter(s => s.type === 'FUND').length,
+            heldDirectly: exp.sources.some(s => s.type === 'DIRECT'),
+        }))
+        .sort((a, b) => b.totalPercentage - a.totalPercentage);
 
-            company.allocation =
-                totalValue === 0
-                    ? 0
-                    : company.value
-                    / totalValue
-                    * 100;
-
-        });
-
-    return Object.values(exposure)
-
-        .sort(
-            (a, b) =>
-                b.value - a.value
-        );
-
+    return { exposures, overlaps };
 }

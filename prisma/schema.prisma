@@ -24,6 +24,35 @@ enum RiskLevel {
   HIGH
 }
 
+enum KYCStatus {
+  VERIFIED
+  PENDING
+  UNVERIFIED
+}
+
+enum InvestorType {
+  RETAIL
+  HNI
+  ACCREDITED
+}
+
+enum RiskCategory {
+  CONSERVATIVE
+  MODERATE
+  AGGRESSIVE
+}
+
+enum Theme {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum NumberFormat {
+  INDIAN
+  WESTERN
+}
+
 model User {
   id        String  @id @default(cuid())
   clerkId   String  @unique
@@ -32,11 +61,104 @@ model User {
   lastName  String?
   imageUrl  String?
 
+  // Regulatory Profile
+  kycStatus           KYCStatus    @default(UNVERIFIED)
+  investorType        InvestorType @default(RETAIL)
+  riskToleranceScore  Int          @default(50)
+  suitabilityCategory RiskCategory @default(MODERATE)
+  
+  // System Preferences
+  aiContextConsent  Boolean  @default(true)
+  preferredCurrency String   @default("INR")
+  sectorBlacklist   String[]
+
   portfolios Portfolio[]
   progress   LearningProgress[]
+  settings   UserSettings?
+  auditLogs  AuditLog[]
+  aaConsents AAConsent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model UserSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Display Preferences
+  theme        Theme        @default(DARK)
+  numberFormat NumberFormat @default(INDIAN)
+  timezone     String       @default("Asia/Kolkata")
+
+  // AI & Privacy
+  sharePortfolioWithAI   Boolean @default(true)
+  storeChatHistory       Boolean @default(true)
+  allowAnonymousTelemetry Boolean @default(false)
+
+  // Notification Preferences
+  hhiAlertsEnabled      Boolean @default(true)
+  hhiThreshold          Int     @default(2500)
+  sectorConcentrationPct Int    @default(30)
+  newAssetListings      Boolean @default(true)
+  sebiCirculars         Boolean @default(true)
+  emailAlertsEnabled    Boolean @default(true)
+  pushNotifications     Boolean @default(false)
+  inAppAlerts           Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actionType String
+  metadata   String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+enum ConsentStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum ConsentFrequency {
+  ONE_TIME
+  DAILY
+}
+
+enum SyncStatus {
+  SUCCESS
+  FAILED
+}
+
+model AAConsent {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentHandle String          @unique
+  fipId         String
+  status        ConsentStatus   @default(PENDING)
+  frequency     ConsentFrequency @default(ONE_TIME)
+  dateRange     String?
+  expiresAt     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model SyncLog {
+  id              String     @id @default(cuid())
+  portfolioId     String
+  portfolio       Portfolio  @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  status          SyncStatus
+  recordsImported Int        @default(0)
+  timestamp       DateTime   @default(now())
 }
 
 model Portfolio {
@@ -51,11 +173,17 @@ model Portfolio {
 
   accountMasked String
 
+  // AA Consent Vault (Legacy fields, keeping for compatibility but will use new relations)
   consentGiven Boolean @default(false)
+  consentId    String?
+  fipName      String?
+  consentStatus String? @default("ACTIVE")
+  expiresAt    DateTime?
 
   lastSyncedAt DateTime?
 
   holdings Holding[]
+  syncLogs SyncLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

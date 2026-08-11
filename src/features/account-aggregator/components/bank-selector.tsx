@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
-import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 import { BANKS } from "../mock/banks";
 import type { Bank } from "../types/account-aggregator";
@@ -26,13 +25,18 @@ export function BankSelector({
 
     return (
         <div className="space-y-6">
-            <Input
-                placeholder="Search bank or broker..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 h-4 w-4" />
+                <input
+                    type="text"
+                    placeholder="Search for your bank or broker..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+            </div>
 
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {filteredBanks.map((bank) => (
                     <BankCard
                         key={bank.id}
@@ -47,9 +51,9 @@ export function BankSelector({
                 type="button"
                 disabled={!selected}
                 onClick={() => selected && onContinue(selected)}
-                className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-xl bg-purple-600 py-3 font-semibold text-white transition-all hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-                Continue
+                Continue securely
             </button>
         </div>
     );

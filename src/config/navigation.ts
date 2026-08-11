@@ -12,11 +12,6 @@ import { NavigationItem } from "@/types/navigation";
 
 export const navigation: NavigationItem[] = [
     {
-        title: "Dashboard",
-        href: "/dashboard",
-        icon: LayoutDashboard,
-    },
-    {
         title: "Portfolio",
         href: "/portfolio",
         icon: PieChart,

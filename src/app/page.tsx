@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-950">
-      <h1 className="text-5xl font-bold text-white">Aartha</h1>
-
-      <Button>Get Started</Button>
-    </main>
+    <Link
+      href="/portfolio"
+      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
+    >
+      Get Started
+    </Link>
   );
 }

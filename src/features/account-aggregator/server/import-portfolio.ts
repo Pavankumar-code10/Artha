@@ -1,53 +1,22 @@
 "use server";
 
+import { syncAccountAggregator } from "@/features/portfolio/server/sync-actions";
 import { prisma } from "@/lib/prisma";
-import { getCurrentDatabaseUser } from "@/lib/auth";
-
-import { MOCK_PORTFOLIO } from "../mock/portfolio";
+import { getOrProvisionUser } from "@/features/portfolio/server/sync-actions";
 
 export async function importMockPortfolio(
     institution: string
 ) {
-    const user = await getCurrentDatabaseUser();
+    const dbUser = await getOrProvisionUser();
+    if (!dbUser) throw new Error("Unauthorized");
 
-    if (!user) {
-        throw new Error("Unauthorized");
-    }
+    // We reuse the robust sync logic that seeds realistic Indian market data
+    await syncAccountAggregator(institution);
 
-    return prisma.$transaction(async (tx) => {
-
-        await tx.holding.deleteMany({
-            where: {
-                portfolio: {
-                    userId: user.id,
-                },
-            },
-        });
-
-        await tx.portfolio.deleteMany({
-            where: {
-                userId: user.id,
-            },
-        });
-
-        const portfolio = await tx.portfolio.create({
-            data: {
-                userId: user.id,
-                name: "Primary Portfolio",
-                institution,
-                accountMasked: "XXXX4321",
-                consentGiven: true,
-                lastSyncedAt: new Date(),
-            },
-        });
-
-        await tx.holding.createMany({
-            data: MOCK_PORTFOLIO.map((holding) => ({
-                portfolioId: portfolio.id,
-                ...holding,
-            })),
-        });
-
-        return portfolio.id;
+    const portfolio = await prisma.portfolio.findFirst({
+        where: { userId: dbUser.id },
+        orderBy: { lastSyncedAt: 'desc' }
     });
+    
+    return portfolio?.id || null;
 }

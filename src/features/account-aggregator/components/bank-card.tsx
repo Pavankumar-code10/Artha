@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
 import type { Bank } from "../types/account-aggregator";
 
 interface BankCardProps {
@@ -20,32 +19,31 @@ export function BankCard({
             type="button"
             onClick={() => onSelect(bank)}
             className={cn(
-                "group relative flex w-full items-center gap-4 rounded-xl border bg-background p-4 text-left transition-all",
-                "hover:border-primary hover:shadow-md",
-                selected && "border-primary ring-2 ring-primary/20"
+                "group relative flex w-full items-center gap-4 rounded-xl border bg-zinc-950 p-4 text-left transition-all",
+                "hover:border-purple-500/50 hover:bg-zinc-900",
+                selected ? "border-purple-500 ring-1 ring-purple-500/50 bg-purple-950/20" : "border-zinc-800"
             )}
         >
             <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold text-white"
-                style={{
-                    backgroundColor: bank.color,
-                }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm"
+                style={{ backgroundColor: bank.color }}
             >
                 {bank.name.charAt(0)}
             </div>
 
             <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">
+                <p className="truncate font-semibold text-zinc-200 text-sm">
                     {bank.name}
                 </p>
-
-                <p className="text-sm text-muted-foreground">
-                    Account Aggregator Supported
+                <p className="text-xs text-zinc-500 mt-0.5">
+                    Sahamati AA Supported
                 </p>
             </div>
 
             {selected && (
-                <Check className="h-5 w-5 text-primary" />
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500 text-white">
+                    <Check className="h-3 w-3" />
+                </div>
             )}
         </button>
     );
